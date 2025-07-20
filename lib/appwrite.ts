@@ -1,12 +1,17 @@
 import {ID,Client,Account,Databases,Avatars,Storage,Query} from "react-native-appwrite";
-import {CreateUserParams, SignInParams} from "@/type";
+import {CreateUserParams, GetMenuParams, SignInParams} from "@/type";
 
 export const appwriteConfig = {
     endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
     platform: "com.fastfood",
     projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
     databaseId:'6878d78100350738a3d9',
-    userCollectionId:'6878d7af0025dcdfd959'
+    bucketId:'687b9ab10007c243a0d0',
+    userCollectionId:'6878d7af0025dcdfd959',
+    categoriesCollectionId:'687b972a0034a29aca57',
+    menuCollectionId:'687b97d40003f31a053b',
+    customizationCollectionId:'687b99050023fac81afe',
+    menuCustomizationCollectionId:'687b99ab00387f1860be'
 }
 
 export const client=new Client();
@@ -65,6 +70,38 @@ export const getCurrentUser = async () => {
         return currentUser.documents[0];
     } catch (e) {
         console.log(e);
+        throw new Error(e as string);
+    }
+}
+
+export const getMenu=async({category,query}:GetMenuParams)=>{
+    try{
+        const queries:string[]=[];
+
+        if(category) queries.push(Query.equal('categories',category));
+        if(query) queries.push(Query.search('name',query));
+
+        const menus=await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.menuCollectionId,
+            queries,
+        )
+
+        return menus.documents
+    }catch(e){
+        throw new Error(e as string);
+    }
+}
+
+export const getCategories=async ()=>{
+    try{
+        const categories=await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.categoriesCollectionId,
+        )
+
+        return categories.documents;
+    }catch(e){
         throw new Error(e as string);
     }
 }
